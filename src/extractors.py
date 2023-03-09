@@ -99,3 +99,66 @@ def parse_corp_agent_data(line_df: pd.DataFrame) -> pd.DataFrame:
     line_df["corp_agent_county_code"] = line_df["line"].str[161:164]
     corp_agent_df = line_df.drop(columns=["line"])
     return corp_agent_df
+
+
+def parse_corp_master_data(line_df: pd.DataFrame) -> pd.DataFrame:
+    line_df["corp_file_number"] = line_df["line"].str[0:8]
+    line_df["corp_incorm_date"] = line_df["line"].str[8:16]
+    line_df["corp_extended_date"] = line_df["line"].str[16:24]
+    line_df["corp_state_code"] = line_df["line"].str[24:26]
+    line_df["corp_corp_intent"] = line_df["line"].str[26:29]
+    line_df["corp_status"] = line_df["line"].str[29:31]
+    line_df["corp_type_corp"] = line_df["line"].str[31:32]
+    line_df["corp_trans_date"] = line_df["line"].str[32:40]
+    line_df["corp_pres_name_addr"] = line_df["line"].str[40:100]
+    line_df["corp_sec_name_addr"] = line_df["line"].str[100:160]
+    corp_master_df = line_df.drop(columns=["line"])
+    return corp_master_df
+
+
+def parse_corp_annual_reports_data(line_df: pd.DataFrame) -> pd.DataFrame:
+    line_df["corp_file_number"] = line_df["line"].str[0:8]
+    line_df["corp_cr_factor"] = line_df["line"].str[8:15]
+    line_df["corp_cr_paid_amount"] = line_df["line"].str[15:24]
+    line_df["corp_cr_ar_cap"] = line_df["line"].str[24:35]
+    line_df["corp_cr_del_run_date"] = line_df["line"].str[35:43]
+    line_df["corp_cr_run_date"] = line_df["line"].str[43:51]
+    line_df["corp_cr_paid_batch_no"] = line_df["line"].str[51:55]
+    line_df["corp_cr_paid_batch_yr"] = line_df["line"].str[55:59]
+    line_df["corp_cr_paid_date"] = line_df["line"].str[59:67]
+    line_df["corp_pv_factor"] = line_df["line"].str[67:74]
+    line_df["corp_pv_paid_amount"] = line_df["line"].str[74:83]
+    line_df["corp_pv_cap"] = line_df["line"].str[83:94]
+    line_df["corp_pv_del_run_date"] = line_df["line"].str[94:102]
+    line_df["corp_pv_run_date"] = line_df["line"].str[102:110]
+    line_df["corp_pv_paid_batch_no"] = line_df["line"].str[110:114]
+    line_df["corp_pv_paid_batch_yr"] = line_df["line"].str[114:118]
+    line_df["corp_pv_paid_date"] = line_df["line"].str[118:126]
+    corp_annual_reports_df = line_df.drop(columns=["line"])
+    return corp_annual_reports_df
+
+
+def parse_corp_stock_data(line_df: pd.DataFrame) -> pd.DataFrame:
+    line_df["corp_file_number"] = line_df["line"].str[0:8]
+    line_df["corp_stock_class"] = line_df["line"].str[8:33]
+    line_df["corp_stock_series"] = line_df["line"].str[33:58]
+    line_df["corp_voting_rights"] = line_df["line"].str[58:59]
+    line_df["corp_authorized_shares"] = line_df["line"].str[59:72]
+    line_df["corp_issued_shares"] = line_df["line"].str[72:88]
+    line_df["corp_par_value"] = line_df["line"].str[88:101]
+    corp_stock_df = line_df.drop(columns=["line"])
+    return corp_stock_df
+
+
+def parse_ll_assumed_name_data(line_df: pd.DataFrame) -> pd.DataFrame:
+    line_df["ll_file_number"] = line_df["line"].str[0:8]
+    line_df["ll_assumed_adopt_date"] = line_df["line"].str[8:16]
+    line_df["ll_assumed_can_date"] = line_df["line"].str[16:24]
+    line_df["ll_assumed_can_code"] = line_df["line"].str[24:25]
+    line_df["ll_assumed_renew_year"] = line_df["line"].str[25:29]
+    line_df["ll_assumed_renew_date"] = line_df["line"].str[29:37]
+    line_df["ll_assumed_ind"] = line_df["line"].str[37:38]
+    line_df["ll_llc_name"] = line_df["line"].str[38:278]
+    line_df["ll_series_nbr"] = line_df["line"].str[278:281]
+    ll_assumed_name_df = line_df.drop(columns=["line"])
+    return ll_assumed_name_df
