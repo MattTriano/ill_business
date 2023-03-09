@@ -162,3 +162,84 @@ def parse_ll_assumed_name_data(line_df: pd.DataFrame) -> pd.DataFrame:
     line_df["ll_series_nbr"] = line_df["line"].str[278:281]
     ll_assumed_name_df = line_df.drop(columns=["line"])
     return ll_assumed_name_df
+
+
+def parse_ll_annual_reports_data(line_df: pd.DataFrame) -> pd.DataFrame:
+    line_df["ll_file_number"] = line_df["line"].str[0:8]
+    line_df["ll_cur_mail_date"] = line_df["line"].str[8:16]
+    line_df["ll_cur_file_date"] = line_df["line"].str[16:24]
+    line_df["ll_cur_deliq_date"] = line_df["line"].str[24:32]
+    line_df["ll_cur_paid_amt"] = line_df["line"].str[32:37]
+    line_df["ll_cur_year_due"] = line_df["line"].str[37:41]
+    line_df["ll_pv_mail_date"] = line_df["line"].str[41:49]
+    line_df["ll_pv_file_date"] = line_df["line"].str[49:57]
+    line_df["ll_pv_deliq_date"] = line_df["line"].str[57:65]
+    line_df["ll_pv_paid_amt"] = line_df["line"].str[65:70]
+    line_df["ll_pv_year_due"] = line_df["line"].str[70:74]
+    ll_annual_reports_df = line_df.drop(columns=["line"])
+    return ll_annual_reports_df
+
+
+def parse_ll_series_names_data(line_df: pd.DataFrame) -> pd.DataFrame:
+    line_df["ll_file_number"] = line_df["line"].str[0:8]
+    line_df["ll_series_number"] = line_df["line"].str[8:11]
+    line_df["ll_series_status"] = line_df["line"].str[11:13]
+    line_df["ll_status_date"] = line_df["line"].str[13:21]
+    line_df["ll_begin_date"] = line_df["line"].str[21:29]
+    line_df["ll_dissolution_date"] = line_df["line"].str[29:37]
+    line_df["ll_series_name"] = line_df["line"].str[37:277]
+    ll_series_names_df = line_df.drop(columns=["line"])
+    return ll_series_names_df
+
+
+def parse_ll_manager_data(line_df: pd.DataFrame) -> pd.DataFrame:
+    line_df["ll_file_number"] = line_df["line"].str[0:8]
+    line_df["ll_mm_name"] = line_df["line"].str[8:68]
+    line_df["ll_mm_street"] = line_df["line"].str[68:113]
+    line_df["ll_mm_city"] = line_df["line"].str[113:143]
+    line_df["ll_mm_juris"] = line_df["line"].str[143:145]
+    line_df["ll_mm_zip"] = line_df["line"].str[145:154]
+    line_df["ll_mm_file_date"] = line_df["line"].str[154:162]
+    line_df["ll_mm_type_code"] = line_df["line"].str[162:163]
+    ll_manager_df = line_df.drop(columns=["line"])
+    return ll_manager_df
+
+
+def parse_ll_master_data(line_df: pd.DataFrame) -> pd.DataFrame:
+    line_df["ll_file_number"] = line_df["line"].str[0:8]
+    line_df["ll_purpose_code"] = line_df["line"].str[8:14]
+    line_df["ll_status_code"] = line_df["line"].str[14:16]
+    line_df["ll_status_date"] = line_df["line"].str[16:24]
+    line_df["ll_organized_date"] = line_df["line"].str[24:32]
+    line_df["ll_dissolution_date"] = line_df["line"].str[32:40]
+    line_df["ll_management_type"] = line_df["line"].str[40:41]
+    line_df["ll_juris_organized"] = line_df["line"].str[41:43]
+    line_df["ll_records_off_street"] = line_df["line"].str[43:88]
+    line_df["ll_records_off_city"] = line_df["line"].str[88:118]
+    line_df["ll_records_off_zip"] = line_df["line"].str[118:127]
+    line_df["ll_records_off_juris"] = line_df["line"].str[127:129]
+    line_df["ll_assumed_ind"] = line_df["line"].str[129:130]
+    line_df["ll_old_ind"] = line_df["line"].str[130:131]
+    line_df["ll_provisions_ind"] = line_df["line"].str[131:132]
+    line_df["ll_opt_ind"] = line_df["line"].str[132:133]
+    line_df["ll_series_ind"] = line_df["line"].str[133:134]
+    line_df["ll_uap_ind"] = line_df["line"].str[134:135]
+    line_df["ll_l3c_ind"] = line_df["line"].str[135:136]
+    ll_master_df = line_df.drop(columns=["line"])
+    return ll_master_df
+
+
+def parse_ll_name_data(line_df: pd.DataFrame) -> pd.DataFrame:
+    line_df["ll_file_number"] = line_df["line"].str[0:8]
+    line_df["ll_name"] = line_df["line"].str[8:]
+    ll_name_df = line_df.drop(columns=["line"])
+    return ll_name_df
+
+
+def parse_ll_old_name_data(line_df: pd.DataFrame) -> pd.DataFrame:
+    line_df["ll_file_number"] = line_df["line"].str[0:8]
+    line_df["ll_old_date_filed"] = line_df["line"].str[8:16]
+    line_df["ll_llc_name"] = line_df["line"].str[16:136]
+    line_df["ll_series_nbr"] = line_df["line"].str[136:139]
+    ll_old_name_df = line_df.drop(columns=["line"])
+    return ll_old_name_df
