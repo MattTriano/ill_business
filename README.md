@@ -1,0 +1,3 @@
+# Illinois Businesss
+
+The data used in these analyses comes from the Illinois Secretary of State, specifically [this page](https://www.ilsos.gov/data/bus_serv_home.html), and the data must be downloaded manually (per the page "The use of any process, software, mechanism, tool, device or other means to send automated queries to the website is strictly prohibited."). It's only a small chore, though, as there are only 14 data files (as of the time of writing).  
