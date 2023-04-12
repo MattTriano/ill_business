@@ -1,3 +1,4 @@
+from copy import copy
 from pathlib import Path
 from typing import List
 import zipfile
@@ -11,6 +12,9 @@ from extractors import (
     parse_corp_name_data,
     parse_corp_agent_data,
     parse_corp_annual_reports_data,
+    parse_corp_assumed_old_name_data,
+    parse_corp_stock_data,
+    parse_corp_other_data,
 )
 
 CORP_STATUS_CODES = {
@@ -403,6 +407,98 @@ ALPHA_COUNTY_CODES = {
 }
 
 
+ASSUMED_OLD_IND_CODES = {
+    "1": "Assume Name",
+    "2": "Old Name",
+    "3": "Expired",
+    "4": "Foreign Assume Name*",
+    "5": "Voluntary Cancellation",
+    "6": "Involuntary Cancellation",
+    "7": "FAS Cancellation",
+    "8": "NFP Assume Name",
+    "9": "NFP Foreign Assume*",
+}
+
+
+VOTING_RIGHTS_CODES = {
+    " ": "Rights Unknown",
+    "Y": "Voting Rights",
+    "N": "No Voting Rights",
+}
+
+
+REPORT_OF_ISSUANCES_CODES = {
+    "0": "Not Applicable",
+    "1": "Did Not File",
+    "2": "Repeal Hold",
+}
+
+OUTSIDE_REGULATOR_CODE = {
+    "0": "No regulation",
+    "1": "Regulated by the Illinois Commerce Commission",
+}
+
+
+NAME_LENGTH_CODES = {
+    "1": "Less than 64 characters",
+    "2": "Greater than 63 characters",
+    "3": "Greater than 126 characters",
+}
+
+
+RECORDS_DESTROYED_CODES = {
+    "0": "Not Destroyed",
+    "1": "Destroyed",
+}
+
+
+INCREASED_LETTER_SENT_CODES = {
+    "0": "Not letter involved",
+    "1": "Increase reported - no letter sent",
+    "2": "First Increase Letter sent",
+    "3": "Second Increase Letter sent",
+    "4": "Dissolution / Revocation process",
+}
+
+ABINITO_FEE_PROBLEM_CODES = {
+    "0": "No problems",
+    "1": "Problems encountered",
+}
+
+OLD_NAME_AVAILABLE_CODES = {
+    "0": "No assumed or old name on file",
+    "1": "Assumed and/or old name(s) are on file",
+    "2": "Assumed and/or old name(s) are on file",
+    "3": "Assumed and/or old name(s) are on file",
+    "4": "Assumed and/or old name(s) are on file",
+    "5": "Assumed and/or old name(s) are on file",
+    "6": "Assumed and/or old name(s) are on file",
+    "7": "Assumed and/or old name(s) are on file",
+    "8": "Assumed and/or old name(s) are on file",
+    "9": "Assumed and/or old name(s) are on file",
+}
+
+SECTION_CODES = {
+    "0041": "Correspondence from Format 41",
+    "0042": "Correspondence from Format 42",
+    "0051": "Notice of Capital Increase Letter",
+    "0052": "Final Notice of Capital Increase Letter",
+    "0053": "Increase of Capital reported in error",
+    "0115": "Statement of Correction",
+    "0117": "Petition for Refund",
+    "0525": "Regular Summons – Corporation Exits",
+    "0530": "Non-qualified Summons – No Corporation Exists",
+    "6666": "County Recorder Payments",
+    "9999": "Miscellaneous",
+}
+
+REVENUE_IND_CODES = {
+    "Y": "Revenue Indicator currently set",
+    "N": "Revenue Indicator previously set",
+    " ": "Revenue Indicator never set",
+}
+
+
 def transform_corp_master_data(DATA_DIR: Path) -> pd.DataFrame:
     lines = read_file_lines(file_path=DATA_DIR.joinpath("cdxallmst.zip"))
     line_df = extract_data_from_lines(lines=lines)
@@ -413,8 +509,16 @@ def transform_corp_master_data(DATA_DIR: Path) -> pd.DataFrame:
     corp_master_df["corp_extended_date"] = pd.to_datetime(
         corp_master_df["corp_extended_date"], errors="coerce"
     )
-    corp_master_df["corp_status"] = corp_master_df["corp_status"].map(CORP_STATUS_CODES)
     corp_master_df["corp_state_code"] = corp_master_df["corp_state_code"].map(STATE_CODES)
+    corp_master_df["corp_is_for_profit"] = (
+        corp_master_df["corp_corp_intent"].isin(CORP_FOR_PROFIT_INTENT_CODES.keys())
+    ) & (corp_master_df["corp_corp_intent"] != "000")
+    business_intent_codes = copy(CORP_FOR_PROFIT_INTENT_CODES)
+    business_intent_codes.update(copy(CORP_NON_PROFIT_INTENT_CODES))
+    corp_master_df["corp_corp_intent"] = corp_master_df["corp_corp_intent"].map(
+        business_intent_codes
+    )
+    corp_master_df["corp_status"] = corp_master_df["corp_status"].map(CORP_STATUS_CODES)
     corp_master_df["corp_type_corp"] = corp_master_df["corp_type_corp"].map(CORP_TYPE_CODES)
     corp_master_df["corp_trans_date"] = pd.to_datetime(
         corp_master_df["corp_trans_date"], errors="coerce"
@@ -447,22 +551,114 @@ def transform_corp_annual_report_data(DATA_DIR: Path) -> pd.DataFrame:
     lines = read_file_lines(file_path=DATA_DIR.joinpath("cdxallarp.zip"))
     line_df = extract_data_from_lines(lines=lines)
     corp_report_df = parse_corp_annual_reports_data(line_df=line_df)
+    corp_report_df["corp_cr_factor"] = corp_report_df["corp_cr_factor"].astype(int)
+    corp_report_df["corp_cr_paid_amount"] = corp_report_df["corp_cr_paid_amount"].astype(int)
+    corp_report_df["corp_cr_ar_cap"] = corp_report_df["corp_cr_ar_cap"].astype(int)
     corp_report_df["corp_cr_del_run_date"] = pd.to_datetime(
         corp_report_df["corp_cr_del_run_date"], errors="coerce"
     )
     corp_report_df["corp_cr_run_date"] = pd.to_datetime(
         corp_report_df["corp_cr_run_date"], errors="coerce"
     )
+    corp_report_df["corp_cr_paid_batch_no"] = corp_report_df["corp_cr_paid_batch_no"].astype(int)
     corp_report_df["corp_cr_paid_date"] = pd.to_datetime(
         corp_report_df["corp_cr_paid_date"], errors="coerce"
     )
+    corp_report_df["corp_pv_factor"] = corp_report_df["corp_pv_factor"].astype(int)
+    corp_report_df["corp_pv_paid_amount"] = corp_report_df["corp_pv_paid_amount"].astype(int)
+    corp_report_df["corp_pv_cap"] = corp_report_df["corp_pv_cap"].astype(int)
     corp_report_df["corp_pv_del_run_date"] = pd.to_datetime(
         corp_report_df["corp_pv_del_run_date"], errors="coerce"
     )
     corp_report_df["corp_pv_run_date"] = pd.to_datetime(
         corp_report_df["corp_pv_run_date"], errors="coerce"
     )
+    corp_report_df["corp_pv_paid_batch_no"] = corp_report_df["corp_pv_paid_batch_no"].astype(int)
     corp_report_df["corp_pv_paid_date"] = pd.to_datetime(
         corp_report_df["corp_pv_paid_date"], errors="coerce"
     )
     return corp_report_df
+
+
+def transform_corp_assumed_old_name_data(DATA_DIR: Path) -> pd.DataFrame:
+    lines = read_file_lines(file_path=DATA_DIR.joinpath("cdxallaon.zip"))
+    line_df = extract_data_from_lines(lines=lines)
+    corp_old_name_df = parse_corp_assumed_old_name_data(line_df=line_df)
+    corp_old_name_df["corp_date_cancel"] = pd.to_datetime(
+        corp_old_name_df["corp_date_cancel"], errors="coerce"
+    )
+    corp_old_name_df["corp_assumed_curr_date"] = pd.to_datetime(
+        corp_old_name_df["corp_assumed_curr_date"], errors="coerce"
+    )
+    corp_old_name_df["corp_assumed_old_ind"] = corp_old_name_df["corp_assumed_old_ind"].map(
+        ASSUMED_OLD_IND_CODES
+    )
+    corp_old_name_df["corp_assumed_old_date"] = pd.to_datetime(
+        corp_old_name_df["corp_assumed_old_date"], errors="coerce"
+    )
+    return corp_old_name_df
+
+
+def transform_corp_stock_data(DATA_DIR: Path) -> pd.DataFrame:
+    lines = read_file_lines(file_path=DATA_DIR.joinpath("cdxallstk.zip"))
+    line_df = extract_data_from_lines(lines=lines)
+    corp_stock_df = parse_corp_stock_data(line_df=line_df)
+    corp_stock_df["corp_voting_rights"] = corp_stock_df["corp_voting_rights"].map(
+        VOTING_RIGHTS_CODES
+    )
+    corp_stock_df["corp_authorized_shares"] = corp_stock_df["corp_authorized_shares"].astype(int)
+    corp_stock_df["corp_issued_shares"] = corp_stock_df["corp_issued_shares"].astype(int)
+    corp_stock_df["corp_par_value"] = corp_stock_df["corp_par_value"].astype(int)
+    return corp_stock_df
+
+
+def transform_corp_other_data(DATA_DIR: Path) -> pd.DataFrame:
+    lines = read_file_lines(file_path=DATA_DIR.joinpath("cdxalloth.zip"))
+    line_df = extract_data_from_lines(lines=lines)
+    corp_other_df = parse_corp_other_data(line_df=line_df)
+    corp_other_df["corp_oth_hold_prorate"] = corp_other_df["corp_oth_hold_prorate"].map(
+        REPORT_OF_ISSUANCES_CODES
+    )
+    corp_other_df["corp_oth_regulated_ind"] = corp_other_df["corp_oth_regulated_ind"].map(
+        OUTSIDE_REGULATOR_CODE
+    )
+    corp_other_df["corp_oth_rec_name_length_ind"] = corp_other_df[
+        "corp_oth_rec_name_length_ind"
+    ].map(NAME_LENGTH_CODES)
+    corp_other_df["corp_oth_records_destroyed"] = corp_other_df["corp_oth_records_destroyed"].map(
+        RECORDS_DESTROYED_CODES
+    )
+    corp_other_df["corp_oth_cap_date"] = pd.to_datetime(
+        corp_other_df["corp_oth_cap_date"], errors="coerce"
+    )
+    corp_other_df["corp_oth_inc_letter_ind"] = corp_other_df["corp_oth_inc_letter_ind"].map(
+        INCREASED_LETTER_SENT_CODES
+    )
+    corp_other_df["corp_oth_abinitio_ind"] = corp_other_df["corp_oth_abinitio_ind"].map(
+        ABINITO_FEE_PROBLEM_CODES
+    )
+    corp_other_df["corp_oth_assume_old_ind"] = corp_other_df["corp_oth_assume_old_ind"].map(
+        OLD_NAME_AVAILABLE_CODES
+    )
+    corp_other_df["corp_oth_duration_date"] = pd.to_datetime(
+        corp_other_df["corp_oth_duration_date"], errors="coerce"
+    )
+    corp_other_df["corp_oth_total_cap"] = corp_other_df["corp_oth_total_cap"].astype(int)
+    corp_other_df["corp_oth_tax_cap"] = corp_other_df["corp_oth_tax_cap"].astype(int)
+    corp_other_df["corp_oth_ill_cap"] = corp_other_df["corp_oth_ill_cap"].astype(int)
+    corp_other_df["corp_oth_cr_new_ill_cap"] = corp_other_df["corp_oth_cr_new_ill_cap"].astype(int)
+    corp_other_df["corp_oth_pv_ill_cap"] = corp_other_df["corp_oth_pv_ill_cap"].astype(int)
+    corp_other_df["corp_oth_fiscal_year"] = pd.to_datetime(
+        corp_other_df["corp_oth_fiscal_year"], errors="coerce"
+    )
+    corp_other_df["corp_oth_sect_code"] = corp_other_df["corp_oth_sect_code"].map(SECTION_CODES)
+    corp_other_df["corp_oth_stock_date"] = pd.to_datetime(
+        corp_other_df["corp_oth_stock_date"], errors="coerce"
+    )
+    corp_other_df["corp_oth_revenue_ind"] = corp_other_df["corp_oth_revenue_ind"].map(
+        REVENUE_IND_CODES
+    )
+    corp_other_df["corp_oth_date_last_chg"] = pd.to_datetime(
+        corp_other_df["corp_oth_date_last_chg"], errors="coerce"
+    )
+    return corp_other_df
