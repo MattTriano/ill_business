@@ -661,4 +661,5 @@ def transform_corp_other_data(DATA_DIR: Path) -> pd.DataFrame:
     corp_other_df["corp_oth_date_last_chg"] = pd.to_datetime(
         corp_other_df["corp_oth_date_last_chg"], errors="coerce"
     )
+    corp_other_df = corp_other_df.rename(columns={"corp_oth_file_number": "corp_file_number"})
     return corp_other_df
